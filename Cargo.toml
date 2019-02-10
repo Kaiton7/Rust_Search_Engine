@@ -1,0 +1,9 @@
+[package]
+name = "Search_Engine_app"
+version = "0.1.0"
+authors = ["uemurakaito <k-uemr@mats.ist.osaka-u.ac.jp>"]
+edition = "2018"
+
+[dependencies]
+scraper = "0.9.1"
+rand = "0.3.0"
