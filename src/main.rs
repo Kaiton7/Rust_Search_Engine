@@ -9,11 +9,11 @@ use mongodb::db::ThreadedDatabase;
 
 
 fn main() {
-    let client = Client::connect("localhost", 27017)
+    let client_RSE = Client::connect("localhost", 27017)
         .expect("Failed to initialize standalone client.");
 
     //let coll = client.db("test").collection("movies");
-    let coll = client.db("index").collection("url");
+    let coll = client_RSE.db("index").collection("url");
 
     let doc_RSE = doc! {
         "keyword": "today",
