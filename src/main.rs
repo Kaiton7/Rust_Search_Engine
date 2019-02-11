@@ -1,93 +1,45 @@
 
 extern crate scraper;
+extern crate mongodb;
 use scraper::Html;
 use std::io;
 use std::thread;
 use std::time::Duration;
 use std::sync::{Mutex, Arc};
-
-struct Philosopher {
-    name: String,
-    left: usize,
-    right: usize,
-}
-struct  Table {
-    forks: Vec<Mutex<()>>,
-
-}
-
-impl Philosopher {
-    fn new(name: &str, left:usize, right: usize) -> Philosopher {
-        Philosopher {
-            name: name.to_string(),
-            left: left,
-            right: right,
-        }
-    }
-
-    fn eat(&self, table: &Table) {
-        let _left = table.forks[self.left].lock().unwrap();
-        thread::sleep(Duration::from_millis(150));
-        let _right = table.forks[self.right].lock().unwrap();
-
-        println!("{} is eating.", self.name);
-
-        thread::sleep(Duration::from_millis(1000));
-
-        println!("{} is done eating.", self.name);
-    }
-}
-
+use mongodb::{Bson, bson, doc};
+use mongodb::{Client, ThreadedClient};
+use mongodb::db::ThreadedDatabase;
 
 
 fn main() {
-    let table = Arc::new(Table { forks: vec![
-        Mutex::new(()),
-        Mutex::new(()),
-        Mutex::new(()),
-        Mutex::new(()),
-        Mutex::new(()),
-    ]});
+    let client = Client::connect("localhost", 27017)
+        .expect("Failed to initialize standalone client.");
 
-    let philosophers = vec![
-        Philosopher::new("Judith", 0, 1),
-        Philosopher::new("Gilles", 1,2),
-        Philosopher::new("Karl",2,3),
-        Philosopher::new("Emma", 3,4),
-        Philosopher::new("Michel",0,4),
-    ];
+    let coll = client.db("test").collection("movies");
 
-    let handles: Vec<_> = philosophers.into_iter().map(|p| {
-        let table = table.clone();
+    let doc = doc! {
+        "title": "Jaws",
+        "array": [ 1, 2, 3 ],
+    };
 
-        thread::spawn(move || {
-            p.eat(&table);
-        })
-    }).collect();
+    // Insert document into 'test.movies' collection
+    coll.insert_one(doc.clone(), None)
+        .ok().expect("Failed to insert document.");
 
-    for h in handles {
-        h.join().unwrap();
+    // Find the document and receive a cursor
+    let mut cursor = coll.find(Some(doc.clone()), None)
+        .ok().expect("Failed to execute find.");
+
+    let item = cursor.next();
+
+    // cursor.next() returns an Option<Result<Document>>
+    match item {
+        Some(Ok(doc)) => match doc.get("title") {
+            Some(&Bson::String(ref title)) => println!("{}", title),
+            _ => panic!("Expected title to be a string!"),
+        },
+        Some(Err(_)) => panic!("Failed to get next from server!"),
+        None => panic!("Server returned no results!"),
     }
-
-    println!("Hello, world!");
-    let html = r#"
-    <!DOCTYPE html>
-    <meta charset="utf-8">
-    <title>Hello, world!</title>
-    <h1 class="foo">Hello, <i>world!</i></h1>
-"#;
-
-    let document = Html::parse_document(html);
-    println!("Guess the number!");
-
-    println!("Please input your guess.");
-
-    let mut guess = String::new();
-
-    io::stdin().read_line(&mut guess)
-        .expect("Failed to read line");
-    
-    println!("You guessed: {}", guess);
-
 
 }

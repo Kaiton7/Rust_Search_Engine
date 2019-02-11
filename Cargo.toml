@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 scraper = "0.9.1"
 rand = "0.3.0"
+mongodb = "0.3.11"
