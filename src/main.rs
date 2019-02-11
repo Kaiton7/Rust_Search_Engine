@@ -17,7 +17,7 @@ fn main() {
 
     let doc_RSE = doc! {
         "keyword": "today",
-        "url": ["https:/local/","https:test"],
+        "url": ["https:/local/","https:test","test"],
     };
     //let doc = doc! {
     //    "title": "Jaws",
