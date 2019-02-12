@@ -40,8 +40,12 @@ fn main() {
     //let item = cursor.next();
 
     match item_RSE {
-        Some(Ok(doc_RSE)) => match doc_RSE.get("keyword") {
-            Some(&Bson::String(ref keyword)) => println!("{}", keyword),
+        //値があるけど型がわからないときはSomeを使う
+        //処理に成功した時Ok
+        Some(Ok(doc_RSE)) => match doc_RSE.get("url") {
+            Some(&Bson::Array(ref url)) => {for x in url{
+                println!("{}", x)
+                }},
             _ => panic!("Expected title to be a string!"),
         },
         Some(Err(_)) => panic!("Failed to get next from server!"),
